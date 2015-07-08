@@ -1,0 +1,16 @@
+extends layout
+
+block content
+  h1= title
+  p #{title}
+  form(method='post')
+    input(type='text', name='email', required='')
+    br
+    br
+    input(type='text', name='user', required='')
+    br
+    br
+    input(type='password', name='pass', required='')
+    br
+    br
+    input(type='submit', name='Submit')

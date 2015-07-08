@@ -1,0 +1,35 @@
+extends layout
+
+block content
+  h1= Shim2k
+  if (session !== user)
+    p !{user.username}'s profile
+      li
+        a(href='/user=#{user.username}/follow?value=yes') Follow
+  if (session == user)
+    p Welcome, !{user.username}
+  p Post count: !{user.post_count}
+  a(href='/following') Following:
+    !{user.following.length}
+  br
+  br
+  a(href='/followers') Followers:
+    !{user.followers.length}
+  br
+  br
+  a(href='/new') Post
+  br
+  if (typeof posts !== "undefined")
+    if (posts.length > 0)
+      h2
+        p posts
+      for post in posts
+        li
+          p
+          a(href='/post=#{post.id}') !{post.title}
+    br
+    if (session !== user)
+      a(href='/') Home
+      br
+      br
+    a(href='/logout?value=yes') Logout
