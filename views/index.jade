@@ -9,15 +9,19 @@ block content
   if (session == user)
     p Welcome, !{user.username}
   p Post count: !{user.post_count}
-  a(href='/following') Following:
+  a(href='/user=#{user.username}/following') Following:
     !{user.following.length}
   br
   br
-  a(href='/followers') Followers:
+  a(href='/user=#{user.username}/followers') Followers:
     !{user.followers.length}
+  if (session == user)
+    br
+    br
+    a(href='/new') Post
   br
   br
-  a(href='/new') Post
+  a(href='/logout?value=yes') Logout
   br
   if (typeof posts !== "undefined")
     if (posts.length > 0)
@@ -32,4 +36,10 @@ block content
       a(href='/') Home
       br
       br
-    a(href='/logout?value=yes') Logout
+
+    if (session == user)
+      p Follow users:
+      for user in users
+        if (user.username !== session.username)
+          li
+            a(href='/user=#{user.username}') !{user.username}

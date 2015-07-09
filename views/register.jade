@@ -3,6 +3,9 @@ extends layout
 block content
   h1= title
   p #{title}
+  a(href='/auth/google') Sign up with Google
+  br
+  br
   form(method='post')
     input(type='text', name='email', required='')
     br

@@ -9,11 +9,14 @@ var userSchema = new Schema({
   username: String,
   pass_hash: String,
   user_salt: String,
+  picture: String,
   posts: [{ type: Schema.Types.ObjectId, ref: 'post' }],
   post_count: { type: Number, default: 0 },
   followers: [{ type: Schema.Types.ObjectId, ref: 'user' }],
+  followers_name: [String],
   followers_count: { type: Number, default: 0 },
-  following: [{ type: Schema.Types.ObjectId, ref: 'user' }, { String }],
+  following: [{ type: Schema.Types.ObjectId, ref: 'user' }],
+  following_name: [String],
   following_count: { type: Number, default: 0 },
 })
 

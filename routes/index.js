@@ -9,11 +9,16 @@ var router = express.Router();
 router.get('/', function(req, res, next) {
   if (req.session && req.session.user) {
     var pc = new post_controller(post_model);
+    var uc = new user_controller(user_model, req.session);
     if (pc) {
       pc.posts(req.session.user.id, function(err, posts) {
-        if (err) { console.log(err); }
         if (posts) {
-          res.render('index', { title: 'Express', session: req.session.user, user: req.session.user, posts: posts.extras });
+          uc.all_users(function(err, docs) {
+            if (docs) {
+              res.render('index', { title: 'Express', session: req.session.user,
+              user: req.session.user, posts: posts.extras, users: docs.extras.msg });
+            }
+          });
         }
       });
     } else {
@@ -21,81 +26,6 @@ router.get('/', function(req, res, next) {
     }
   } else {
     res.redirect('/login');
-  }
-});
-
-router.get('/new', function(req, res, next) {
-  if (req.session && req.session.user) {
-    res.render('new_post', { title: 'New Post', user: req.session.user });
-  } else {
-    res.redirect('/');
-  }
-});
-
-router.get('/following', function(req, res) {
-  if (req.session && req.session.user) {
-    var uc = new user_controller(user_model, req.session);
-    if (uc) {
-      uc.following(function(err, following) {
-        if (err) { console.log(err); }
-        if (following) {
-          following = following.extras.msg.following;
-          res.render('following', { following: following });
-        }
-      })
-    }
-  }
-})
-
-router.get('/followers', function(req, res) {
-  if (req.session && req.session.user) {
-    var uc = new user_controller(user_model, req.session);
-    if (uc) {
-      uc.followers(function(err, followers) {
-        if (err) { console.log(err); }
-        if (followers) {
-          followers = followers.extras.msg.followers;
-          res.render('followers', { followers: followers });
-        }
-      })
-    }
-  }
-})
-
-router.get('/user=:id/follow', function(req, res) {
-  var uc = new user_controller(user_model, req.session);
-  if (req.session && req.session.user) {
-    if (req.query.value === 'yes') {
-      uc.follow(req.params.id, function(err, docs) {
-        console.log(docs);
-        if (docs.success === true) {
-          req.session.user.following += 1;
-          res.redirect('/user=' + req.params.id);
-        } else { res.redirect('/'); }
-      });
-    } else { res.redirect('/'); }
-  }
-      // uc.name(req.params.id, function(err, user) {
-      //   if (err) { console.log(err); }
-      //   if (user) {
-      //     uc.follow(user, function(err, docs) {
-      //       if (err) { console.log(err); }
-      //       console.log(docs);
-      //       if (docs.success === 'true') {
-      //         console.log('?');
-      //         res.redirect('/user=:id');
-      //       }
-      //     });
-      //   }
-      // })
-});
-
-router.get('/login', function(req, res, next) {
-  if (req.session && req.session.user) {
-    res.redirect('/');
-  } else {
-    req.session.reset();
-    res.render('login', { title: 'Login', info: '' });
   }
 });
 
@@ -137,6 +67,107 @@ router.get('/post=:id', function(req, res) {
   }
 })
 
+router.get('/following', function(req, res) {
+  if (req.session && req.session.user) {
+    var uc = new user_controller(user_model, req.session);
+    if (uc) {
+      uc.following(null, function(err, following) {
+        if (err) { console.log(err); }
+        if (following) {
+          following = following.extras.msg.following_name;
+          res.render('following', { following: following });
+        }
+      })
+    }
+  }
+})
+
+router.get('/user=:id/following', function(req, res) {
+  if (req.session && req.session.user) {
+    var uc = new user_controller(user_model, req.session);
+    if (uc) {
+      uc.following(req.params.id, function(err, following) {
+        if (err) { console.log(err); }
+        if (following) {
+          following = following.extras.msg.following_name;
+          res.render('following', { following: following });
+        }
+      })
+    }
+  }
+})
+
+router.get('/followers', function(req, res) {
+  if (req.session && req.session.user) {
+    var uc = new user_controller(user_model, req.session);
+    if (uc) {
+      uc.followers(function(err, followers) {
+        if (err) { console.log(err); }
+        if (followers) {
+          followers = followers.extras.msg.followers_name;
+          res.render('followers', { followers: followers });
+        }
+      })
+    }
+  }
+})
+
+router.get('/user=:id/followers', function(req, res) {
+  if (req.session && req.session.user) {
+    var uc = new user_controller(user_model, req.session);
+    if (uc) {
+      uc.followers(req.params.id, function(err, followers) {
+        if (err) { console.log(err); }
+        if (followers) {
+          followers = followers.extras.msg.followers_name;
+          res.render('followers', { followers: followers });
+        }
+      })
+    }
+  }
+})
+
+router.get('/user=:id/follow', function(req, res) {
+  var uc = new user_controller(user_model, req.session);
+  if (req.session && req.session.user) {
+    if (req.query.value === 'yes') {
+      uc.follow(req.params.id, function(err, docs) {
+        console.log(docs);
+        if (docs.success === true) {
+          req.session.user.following += 1;
+          res.redirect('/user=' + req.params.id);
+        } else { res.redirect('/'); }
+      });
+    } else { res.redirect('/'); }
+  }
+});
+
+router.get('/login', function(req, res, next) {
+  if (req.session && req.session.user) {
+    res.redirect('/');
+  } else {
+    req.session.reset();
+    res.render('login', { title: 'Login', info: '' });
+  }
+});
+
+router.get('/register', function(req, res, next) {
+  if (req.session && req.session.user) {
+    res.redirect('/');
+  } else {
+    req.session.reset();
+    res.render('register', { title: 'Register', user: req.session.user });
+  }
+});
+
+router.get('/new', function(req, res, next) {
+  if (req.session && req.session.user) {
+    res.render('new_post', { title: 'New Post', user: req.session.user });
+  } else {
+    res.redirect('/');
+  }
+});
+
 router.get('/logout', function(req, res, next) {
   if (req.query.value === 'yes') {
     req.session.reset();
@@ -147,14 +178,5 @@ router.get('/logout', function(req, res, next) {
     res.redirect('/');
   }
 })
-
-router.get('/register', function(req, res, next) {
-  if (req.session && req.session.user) {
-    res.redirect('/');
-  } else {
-    req.session.reset();
-    res.render('register', { title: 'Register', user: req.session.user });
-  }
-});
 
 module.exports = router;

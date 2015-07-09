@@ -15,6 +15,18 @@ post_controller.prototype.posts = function(id, callback) {
   })
 }
 
+post_controller.prototype.following = function(ids, callback) {
+  var me = this;
+  console.log(ids);
+  me.post_model.find({ _id: { $in: ids }}).sort({ date: -1 }).find(function(err, docs) {
+    if (err) {
+      console.log(err);
+    } if (docs) {
+      return callback(err, new me.api_response({ success: true, extras: docs }));
+    }
+  })
+}
+
 post_controller.prototype.by_id = function(id, callback) {
   var me = this;
   me.post_model.find({ _id: id }).sort({ date: -1 }).find(function(err, docs) {
