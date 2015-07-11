@@ -1,45 +1,91 @@
 extends layout
 
 block content
-  h1= Shim2k
-  if (session !== user)
-    p !{user.username}'s profile
-      li
-        a(href='/user=#{user.username}/follow?value=yes') Follow
-  if (session == user)
-    p Welcome, !{user.username}
-  p Post count: !{user.post_count}
-  a(href='/user=#{user.username}/following') Following:
-    !{user.following.length}
-  br
-  br
-  a(href='/user=#{user.username}/followers') Followers:
-    !{user.followers.length}
-  if (session == user)
-    br
-    br
-    a(href='/new') Post
-  br
-  br
-  a(href='/logout?value=yes') Logout
-  br
-  if (typeof posts !== "undefined")
-    if (posts.length > 0)
-      h2
-        p posts
-      for post in posts
-        li
-          p
-          a(href='/post=#{post.id}') !{post.title}
-    br
-    if (session !== user)
-      a(href='/') Home
-      br
-      br
+  .container
+    .row.profile
+        .col-md-3
+          .profile-sidebar
+            .well
+              .profile-userpic
+                //- p !{user.picture}
+                img.img-responsive(src='#{user.picture}', alt='#{user.username}')
+              // END SIDEBAR USERPIC
+              // SIDEBAR USER TITLE
+              .profile-usertitle
+                if (session !== user)
+                  .profile-usertitle-name
+                    | !{user.username}'s profile
+                if (session == user)
+                  .profile-usertitle-name
+                    | Welcome, !{user.username}
+                .profile-usertitle-job
+                  | Developer
+              // END SIDEBAR USER TITLE
+              // SIDEBAR BUTTONS
+              .profile-userbuttons
+                if (session !== user)
+                  a(href='/user=#{user.username}/follow?value=yes')
+                    button.btn.btn-default.btn-sm(type='button') Follow
+                //button.btn.btn-success.btn-sm(type='button') Message
+              // END SIDEBAR BUTTONS
+              // SIDEBAR MENU
+              .profile-usermenu
+                ul.nav
+                  li
+                    if (session == user)
+                      a(href='/new')
+                        button.btn.btn-default(type='button') Post
+                  li
+                    if (session == user)
+                      a(href='/following') Following:
+                        !{user.following.length}
+                    if (session !== user)
+                      a(href='/user=#{user.username}/following') Following:
+                        !{user.following.length}
+                  li
+                    if (session == user)
+                      a(href='/followers') Followers:
+                        !{user.followers.length}
+                    if (session !== user)
+                      a(href='/user=#{user.username}/followers') Followers:
+                        !{user.followers.length}
+                  li
+                    if (session == user)
+                      a(href='/posts') Post count:
+                        !{user.post_count}
+                    if (session !== user)
+                      a(href='/user=#{user.username}/posts') Post count:
+                        !{user.post_count}
+                  li
+                    a(href='/logout?value=yes') Logout
+        .col-md-4
+          if (session == user)
+            .profile-content
+              .well
+                p Follow users:
+                for user in users
+                  for follow in session.following
+                    if (follow == user.username)
+                      li
+                        a(href='/user=#{user.username}') !{user.username} 
+                        a(href='/user=#{user.username}/follow?value=yes')
+                          button.btn.btn-success.btn-sm(type='button') Following
+                  if (session.username !== user.username)
+                    if (session.following.indexOf(user.username) < 0)
+                      li
+                        a(href='/user=#{user.username}') !{user.username} 
+                        a(href='/user=#{user.username}/follow?value=yes')
+                          button.btn.btn-default.btn-sm(type='button') Follow
 
-    if (session == user)
-      p Follow users:
-      for user in users
-        if (user.username !== session.username)
-          li
-            a(href='/user=#{user.username}') !{user.username}
+        .col-md-5
+          .profile-content
+            if (typeof posts !== "undefined")
+              if (posts.length > 0)
+                for post in posts
+                  .well
+                    h3
+                      a(href='/post=#{post.id}') !{post.title}
+                    p !{post.content}
+                    for tag in post.tags
+                      button.btn.btn-default.btn-sm(type='button') !{tag}
+                    hr

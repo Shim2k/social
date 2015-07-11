@@ -83,13 +83,12 @@ user_controller.prototype.follow = function(user_to_follow, callback) {
         }
         if (to_follow) {
           if (user.following.indexOf(to_follow._id) < 0) {
-            console.log(to_follow);
             user.update({ $push: { "following" : to_follow, "following_name" : to_follow.username }, $inc: { following_count: 1 }}, function(err, follower) {
               if (follower.nModified) {
                 to_follow.update({ $push: { "followers" : user, "followers_name": user.username }, $inc: { followers_count: 1 }}, function(err, user) {
                   if (user.nModified) {
                     return callback(err, new me.api_response({
-                      success: true, extras: { msg: 'Following.' },
+                      success: true, extras: { msg: to_follow.username },
                     }));
                   } else {
                     return callback(err, new me.api_response({
@@ -104,9 +103,56 @@ user_controller.prototype.follow = function(user_to_follow, callback) {
               }
             });
           } else {
+            console.log('user.following');
+            console.log(user.following);
+
+            var uf = user.following ? user.following.indexOf(to_follow._id) : -1;
+            // is it valid?
+            console.log('idx');
+            console.log(uf);
+            if (uf !== -1) {
+              var uf_name = user.following_name ? user.following_name.indexOf(to_follow.username) : -1;
+              console.log('idx_name');
+              console.log(uf_name);
+              if (uf_name !== -1) {
+                user.following.splice(uf, 1);
+                user.following_name.splice(uf_name, 1);
+                var tf = to_follow.followers ? to_follow.following.indexOf(user._id) : -1;
+                if (tf !== -1) {
+                  var tf_name = to_follow.followers_name ? to_follow.following_name.indexOf(user.username) : -1;
+                  if (tf_name !== -1) {
+                    console.log('to_follow.followers_name');
+                    console.log(to_follow.followers_name);
+                    to_follow.followers.splice(tf, 1);
+                    to_follow.followers_name.splice(tf_name, 1);
+                    console.log(to_follow.followers_name);
+                    user.save(function(err) {
+                      if (err) return handleError(res, req, err);
+                    });
+                    to_follow.save(function(err) {
+                      if (err) return handleError(res, req, err);
+                    });
+                  }
+                }
+              }              
+            }
             return callback(err, new me.api_response({
-              success: false, extras: { msg: 'Already follows.' }
-            }))
+              success: true, extras: { msg: to_follow.username },
+            }));
+            // user.update({ $pull: { "following" : to_follow, "following_name" : to_follow.username }, $inc: { following_count: -1 }}, function(err, follower) {
+            //   if (follower.nModified) {
+            //     to_follow.update({ $push: { "followers" : user, "followers_name": user.username }, $inc: { followers_count: -1 }}, function(err, user) {
+            //       if (user.nModified) {
+            //         return callback(err, new me.api_response({
+            //           success: true, extras: { msg: to_follow.username },
+            //         }));
+            //       }
+            //     });
+            //   }
+            // });
+            // return callback(err, new me.api_response({
+            //   success: false, extras: { msg: ['Already follows.', to_follow.username] }
+            // }))
           }
         } else {
           return callback(err, new me.api_response({
@@ -125,10 +171,8 @@ user_controller.prototype.follow = function(user_to_follow, callback) {
 user_controller.prototype.name = function (name , callback) {
   var me = this;
   var username = String(name);
-  console.log('aa');
   me.user_model.findOne({ username: username }, function (err, user) {
     if (user) {
-      console.log('name');
       return callback(err, new me.api_response({
         success: true, extras: { msg: user },
       }))
@@ -175,11 +219,12 @@ user_controller.prototype.register = function (new_user, callback) {
           }))
         }
         if (numberAffected == 1) {
+          var picture = user.picture || 'https://lh3.googleusercontent.com/-XdUIqdMkCWA/AAAAAAAAAAI/AAAAAAAAAAA/4252rscbv5M/photo.jpg?sz=50';
           var profile = new me.user_profile({
             id: user._id,
             email: user.email,
             username: user.username,
-          //  picture: user.
+            picture: picture,
             post_count: user.post_count,
             followers: user.followers_name,
             following: user.following_name,
@@ -211,10 +256,12 @@ user_controller.prototype.login = function (username, password, callback) {
       me.hash_pass(password, user.user_salt, function(err, hashed) {
         if (err) { console.log('Error hashing password'); }
         if (String(hashed) === user.pass_hash) {
+          //var picture = user.picture;
           var user_profile = new me.user_profile({
             id: user._id,
             email: user.email,
             username: user.username,
+            picture: user.picture,
             post_count: user.post_count,
             followers: user.followers_name,
             following: user.following_name,

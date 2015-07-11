@@ -1,0 +1,28 @@
+doctype html(lang='en')
+head
+	meta(charset='utf-8')
+	meta(http-equiv='X-UA-Compatible', content='IE=edge')
+	meta(name='viewport', content='width=device-width, initial-scale=1')
+	meta(name='description', content='Shimi Razilov')
+	meta(name='author', content='Shim2k')
+
+	link(href='css/style.css', rel='stylesheet')
+	link(href='css/bootstrap.css', rel='stylesheet')
+
+	title Shim2k
+
+	nav.navbar.navbar-default
+		.container
+			.menu-position
+				.navbar-header
+					button.navbar-toggle.pull-right(type='button', data-toggle='collapse', data-target='#bs-example-navbar-collapse-1')
+						.glyphicon.glyphicon-menu-down(style='color:#003399')
+					a.navbar-brand(href='/') Shim2k
+					#bs-example-navbar-collapse-1.collapse.navbar-collapse
+				ul.nav.navbar-nav
+					li
+						a(href='/') Profile
+					li
+						a(href='/feed') Feed
+					li
+						a(href='/popular') Popular

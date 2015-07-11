@@ -2,18 +2,12 @@ extends layout
 
 block content
   h1= Shim2k
-  !{post}
   if (typeof posts !== 'undefined')
     for post in posts
       h2 !{post.title}
       p !{post.content}
-      p !{post.tags}
+      for tag in post.tags
+        button.btn.btn-default.btn-sm(type='button') !{tag}
       //if (typeof post.tags !== "undefined")
       //  for tag in post.tags
       //    p !{tag}
-
-  br
-  a(href='/') Home
-  br
-  br
-  a(href='/logout?value=yes') Logout

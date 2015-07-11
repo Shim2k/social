@@ -1,5 +1,4 @@
 'use strict';
-
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
@@ -112,13 +111,14 @@ app.get('/google/auth', passport.authenticate('google', { failureRedirect: '/reg
 
 function third_party_register(req, res, email, display_name) {
   var uc = new user_controller(user_model);
-  uc.name(display_name, function(err, user) {
+  uc.login(display_name, req.user.id, function(err, profile) {
     if (err) {
-      console.log(err);
+      console.log('Login failed.');
+      res.render('login', { error: profile.extras.msg });
     }
-    if (user.success === true) {
-      console.log('lol');
-      req.session.user = user.extras.msg;
+    if (profile.success === true) {
+      req.session.user = profile.extras.msg;
+      console.log('Login');
       res.redirect('/');
     }
     else {
@@ -131,9 +131,8 @@ function third_party_register(req, res, email, display_name) {
             email: email,
             username: display_name,
             pass_hash: hashed,
-          //  picture: req.user.
             user_salt: user_salt,
-            picture: req.user.photos.value
+            picture: req.user.photos[0].value
           });
           uc.register(new_user, function(err, response) {
             if (err) { console.log('Registration error.'); }
@@ -149,7 +148,6 @@ function third_party_register(req, res, email, display_name) {
 }
 
 app.post('/register', function register(req, res) {
-  console.log('register');
   var uc = new user_controller(user_model);
   var user_salt = crypto.randomBytes(64).toString('base64'); //random salt
   uc.hash_pass(req.body.pass, user_salt, function(err, hashed) {
@@ -160,7 +158,9 @@ app.post('/register', function register(req, res) {
         email: req.body.email,
         username: req.body.user,
         pass_hash: hashed,
-        user_salt: user_salt
+        user_salt: user_salt,
+        //No uploads so only default picture
+        picture: 'https://lh3.googleusercontent.com/-XdUIqdMkCWA/AAAAAAAAAAI/AAAAAAAAAAA/4252rscbv5M/photo.jpg?sz=50',
       });
       uc.register(new_user, function(err, response) {
         if (err) { console.log('Registration error.'); }
@@ -192,7 +192,6 @@ app.post('/new', function(req, res) {
       content: req.body.content,
       tags: tags_array,
     });
-
     uc.push(post);
     pc.save(post);
     req.session.user.post_count += 1;

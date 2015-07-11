@@ -17,7 +17,6 @@ post_controller.prototype.posts = function(id, callback) {
 
 post_controller.prototype.following = function(ids, callback) {
   var me = this;
-  console.log(ids);
   me.post_model.find({ _id: { $in: ids }}).sort({ date: -1 }).find(function(err, docs) {
     if (err) {
       console.log(err);

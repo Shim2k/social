@@ -2,7 +2,8 @@
 var mongoose = require('mongoose');
 
 // Build the connection string
-var dbURI = 'mongodb://shim:test@ds053160.mongolab.com:53160/social';
+//var dbURI = 'mongodb://shim:test@ds053160.mongolab.com:53160/social';
+var dbURI = 'mongodb://localhost:27017/';
 
 // Create the database connection
 mongoose.connect(dbURI);

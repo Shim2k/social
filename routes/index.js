@@ -15,7 +15,7 @@ router.get('/', function(req, res, next) {
         if (posts) {
           uc.all_users(function(err, docs) {
             if (docs) {
-              res.render('index', { title: 'Express', session: req.session.user,
+              res.render('index', { title: 'Shim', session: req.session.user,
               user: req.session.user, posts: posts.extras, users: docs.extras.msg });
             }
           });
@@ -75,7 +75,7 @@ router.get('/following', function(req, res) {
         if (err) { console.log(err); }
         if (following) {
           following = following.extras.msg.following_name;
-          res.render('following', { following: following });
+          res.render('following', { session: req.session.user, following: following });
         }
       })
     }
@@ -90,7 +90,7 @@ router.get('/user=:id/following', function(req, res) {
         if (err) { console.log(err); }
         if (following) {
           following = following.extras.msg.following_name;
-          res.render('following', { following: following });
+          res.render('following', { session: req.session.user, following: following });
         }
       })
     }
@@ -101,11 +101,11 @@ router.get('/followers', function(req, res) {
   if (req.session && req.session.user) {
     var uc = new user_controller(user_model, req.session);
     if (uc) {
-      uc.followers(function(err, followers) {
+      uc.followers(null, function(err, followers) {
         if (err) { console.log(err); }
         if (followers) {
           followers = followers.extras.msg.followers_name;
-          res.render('followers', { followers: followers });
+          res.render('followers', { session: req.session.user, followers: followers });
         }
       })
     }
@@ -120,7 +120,7 @@ router.get('/user=:id/followers', function(req, res) {
         if (err) { console.log(err); }
         if (followers) {
           followers = followers.extras.msg.followers_name;
-          res.render('followers', { followers: followers });
+          res.render('followers', { session: req.session.user, followers: followers });
         }
       })
     }
@@ -132,14 +132,18 @@ router.get('/user=:id/follow', function(req, res) {
   if (req.session && req.session.user) {
     if (req.query.value === 'yes') {
       uc.follow(req.params.id, function(err, docs) {
-        console.log(docs);
         if (docs.success === true) {
-          req.session.user.following += 1;
-          res.redirect('/user=' + req.params.id);
-        } else { res.redirect('/'); }
+          var i = req.session.user.following.indexOf(docs.extras.msg);
+          if(i != -1) {
+          	req.session.user.following.splice(i, 1);
+          } else {
+            req.session.user.following.push(docs.extras.msg);
+          }
+          res.redirect('/');
+        }
       });
-    } else { res.redirect('/'); }
-  }
+      } else { res.redirect('/'); }
+    } else { res.redirect('/user=' + req.params.id); }
 });
 
 router.get('/login', function(req, res, next) {
